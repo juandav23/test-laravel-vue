@@ -1,9 +1,10 @@
 <script>
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref, inject } from 'vue'
 import axios from 'axios'
 
 export default {
   setup() {
+    const swal = inject('$swal')
     const list = reactive({ data: [] })
     const errormsg = ref('')
 
@@ -24,7 +25,7 @@ export default {
       e.preventDefault()
 
       try {
-        await axios.post('client', record)
+        await axios.post('person', record)
         getList()
 
         record.name = ''
@@ -37,8 +38,27 @@ export default {
       }
     }
 
+    const deletePerson = async (id) => {
+      try {
+        const response = await axios.delete(`person/${id}`)
+        if (response.data.status === true) {
+          swal.fire({
+            icon: 'success',
+            text: 'Person deleted successfully'
+          })
+        }
+      } catch (error) {
+        console.info(error.response?.data?.errors)
+        swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: error.response.data.errors
+        })
+      }
+    }
+
     const getList = async () => {
-      const response = await axios.get('client')
+      const response = await axios.get('person')
       list.data = response.data
       console.info(list)
     }
@@ -54,18 +74,18 @@ export default {
       return age
     }
 
-    return { record, submitForm, list, errormsg, getAge }
+    return { record, submitForm, list, errormsg, getAge, deletePerson }
   }
 }
 </script>
 
 <template>
   <div>
-    <h1 class="title">Clients</h1>
+    <h1 class="title">People</h1>
 
     <div class="content">
       <div class="create-new">
-        <label class="subtitle">Create New Client</label>
+        <label class="subtitle">Create New Person</label>
         <form @submit="submitForm">
           <p class="form-group">
             <label for="name">Client Name</label>
@@ -96,10 +116,18 @@ export default {
 
       <div class="list">
         <ul class="list">
-          <li v-for="client in list.data" :key="client.id">
-            <p>{{ client.name }} - {{ getAge(client.birth_date) }} years</p>
-            <span>Education Level: ({{ client.education_level }})</span><br />
-            <span>Skills: ({{ client.skills }})</span>
+          <li class="person-info" v-for="client in list.data" :key="client.id">
+            <div>
+              <p>{{ client.name }} - {{ getAge(client.birth_date) }} years</p>
+              <span>Education Level: ({{ client.education_level }})</span><br />
+              <span>Skills: ({{ client.skills }})</span><br />
+              <span>Available: ({{ client.available ? 'Yes' : 'No' }})</span>
+            </div>
+            <div class="actions">
+              <button class="primary delete" title="Delete Person" @click="deletePerson(client.id)">
+                Delete
+              </button>
+            </div>
           </li>
         </ul>
       </div>
@@ -110,6 +138,7 @@ export default {
 <style lang="scss" scoped>
 .content {
   display: flex;
+
   .create-new {
     width: 36%;
     padding: 20px;
@@ -120,6 +149,16 @@ export default {
       margin-bottom: 20px;
       display: block;
     }
+  }
+
+  .person-info {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .delete {
+    color: white;
+    background-color: red;
   }
 
   .error-area {

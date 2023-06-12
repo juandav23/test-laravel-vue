@@ -39,9 +39,9 @@ export default {
 
       <nav>
         <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/clients">Clients</RouterLink>
         <RouterLink to="/companies">Companies</RouterLink>
         <RouterLink to="/positions">Positions</RouterLink>
+        <RouterLink to="/people">People</RouterLink>
       </nav>
     </div>
   </header>

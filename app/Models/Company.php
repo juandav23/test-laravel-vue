@@ -8,4 +8,9 @@ use App\Models\Model;
 class Company extends Model
 {
     use HasFactory;
+
+    public function positions()
+    {
+        return $this->hasMany(Positions::class);
+    }
 }

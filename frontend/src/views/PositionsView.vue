@@ -1,12 +1,14 @@
 <script>
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref, inject } from 'vue'
 import axios from 'axios'
 import router from '@/router'
 
 export default {
   setup() {
+    const swal = inject('$swal')
     const list = reactive({ data: [] })
     const companies = reactive({ data: [] })
+    const company = reactive({ data: [] })
     const errormsg = ref('')
 
     const record = reactive({
@@ -15,12 +17,16 @@ export default {
       role: '',
       description: '',
       years_of_experience: '',
-      salary: ''
+      budget: ''
     })
 
     onMounted(() => {
       getCompanies()
     })
+
+    const filterDesc = (text) => {
+      return text.substring(0, 180) + '...'
+    }
 
     const submitForm = async (e) => {
       errormsg.value = ''
@@ -32,10 +38,16 @@ export default {
 
         record.description = ''
         record.years_of_experience = ''
-        record.salary = ''
+        record.budget = ''
       } catch (error) {
         console.info(error.response.data.errors)
         errormsg.value = error.response.data.errors
+
+        swal.fire({
+          icon: 'error',
+          //title: 'Oops...',
+          text: error.response.data.errors
+        })
       }
     }
 
@@ -43,7 +55,8 @@ export default {
       if (!record.company_id) return
       const response = await axios.get(`positions/${record.company_id}`)
       list.data = response.data
-      console.info(list)
+      company.data = companies.data.find((company) => company.id === record.company_id)
+      console.info(company.data)
     }
 
     const getCompanies = async () => {
@@ -56,7 +69,17 @@ export default {
       router.push({ path: '/position/' + positionId })
     }
 
-    return { record, submitForm, list, errormsg, getPositions, companies, navigateToPosition }
+    return {
+      record,
+      submitForm,
+      list,
+      errormsg,
+      getPositions,
+      companies,
+      navigateToPosition,
+      filterDesc,
+      company
+    }
   }
 }
 </script>
@@ -73,6 +96,9 @@ export default {
       </select>
     </div>
 
+    Total Budget: {{ company.data.budget }} Available: {{ company.data.positions_sum_budget }}
+    <hr />
+
     <div class="content" v-show="record.company_id">
       <div class="positions-view">
         <ul class="list">
@@ -81,13 +107,13 @@ export default {
               <a href="#" @click="navigateToPosition(position.id)">
                 {{ position.role }}
               </a>
-              <span class="open" v-if="position.open">OPEN</span>
-              <span class="closed" v-if="!position.open">CLOSED</span>
+              <span class="open" v-if="position.open">STATUS: OPEN</span>
+              <span class="closed" v-if="!position.open">STATUS: CLOSED</span>
             </p>
-            <span>{{ position.description }}</span
+            <span class="description">{{ filterDesc(position.description) }}</span
             ><br />
             <span>Years Of Experience: ({{ position.years_of_experience }})</span><br />
-            <span>Salary: ({{ position.salary }})</span>
+            <span>Budget: ({{ position.budget }})</span>
           </li>
         </ul>
       </div>
@@ -106,8 +132,8 @@ export default {
             <input v-model="record.years_of_experience" type="number" required :max="10" />
           </p>
           <p class="form-group">
-            <label for="salary">Salary</label>
-            <input v-model="record.salary" type="number" required />
+            <label for="budget">Budget</label>
+            <input v-model="record.budget" type="number" required />
           </p>
           <p class="form-group">
             <label for="description">Description</label>
@@ -187,6 +213,10 @@ export default {
         font-size: 0.8rem;
         font-weight: 600;
       }
+    }
+
+    .description {
+      color: white;
     }
   }
 

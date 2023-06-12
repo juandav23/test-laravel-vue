@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('address');
             $table->integer('zip_code');
+            $table->decimal('budget', 8, 2)->nullable();
             $table->integer('open_positions')->default(0);
             $table->timestamps();
         });

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Applicant;
 use App\Models\Company;
+use App\Models\Person;
 use App\Models\Positions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -15,20 +16,20 @@ class PositionsController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(string $company_id): array
+    public function index(string $company_id)
     {
         return Positions::where('company_id', $company_id)->get();
     }
 
     public function getPosition($id)
     {
-        return Positions::with('applicants.client')->where('id', $id)->first();
+        return Positions::with('applicants.person')->where('id', $id)->first();
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): JsonResponse
+    public function store(Request $request) //: JsonResponse
     {
         try {
             //Validate informartion
@@ -37,7 +38,7 @@ class PositionsController extends Controller
                 'company_id' => ['required', 'max:255'],
                 'description' => ['required'],
                 'years_of_experience' => ['numeric', 'nullable', 'max:10'],
-                'salary' => ['numeric', 'nullable', 'max:10000'],
+                'budget' => ['numeric', 'required', 'max:15000'],
             ]);
 
             if ($validator->fails()) {
@@ -48,9 +49,19 @@ class PositionsController extends Controller
                 ], 401);
             }
 
-            $record = Positions::create($request->all());
+            $usedBudget = Positions::where('company_id', $request->company_id)->sum('budget');
+            $company = Company::find($request->company_id);
 
-            $company = Company::find($record->company_id);
+            if (($usedBudget + $request->budget) > $company->budget) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'validation error',
+                    'errors' => 'Budget not enough'
+                ], 401);
+            }
+
+
+            $record = Positions::create($request->all());
             $company->open_positions = $company->open_positions + 1;
             $company->save();
 
@@ -74,7 +85,7 @@ class PositionsController extends Controller
             //Validate informartion
             $validator = Validator::make($request->all(), [
                 'positions_id' => ['required', 'max:255'],
-                'client_id' => ['required', 'max:255', Rule::unique('applicants')
+                'person_id' => ['required', 'max:255', Rule::unique('applicants')
                     ->where(function ($query) use ($position) {
                         return $query->where('positions_id', $position);
                     })],
@@ -88,7 +99,20 @@ class PositionsController extends Controller
                 ], 401);
             }
 
+            $person = Person::find($request->input('person_id'));
+
+            if (!$person->available) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'validation error',
+                    'errors' => 'This person is not currently available'
+                ], 401);
+            }
+
             $record = Applicant::create($request->all() + ['score' => 1]);
+
+            $person->available = false;
+            $person->save();
 
             return response()->json([
                 'status' => true,
@@ -120,7 +144,7 @@ class PositionsController extends Controller
         $applicant->save();
 
         $position = Positions::find($applicant->positions_id);
-        $position->client_id = $applicant->client_id;
+        $position->person_id = $applicant->person_id;
         $position->open = false;
         $position->save();
 

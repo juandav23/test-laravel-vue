@@ -1,5 +1,5 @@
 <script>
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref, inject } from 'vue'
 import { useRoute } from 'vue-router'
 import Modal from '../components/ModalCmp.vue'
 import axios from 'axios'
@@ -7,6 +7,7 @@ import axios from 'axios'
 export default {
   components: { Modal },
   setup() {
+    const swal = inject('$swal')
     const route = useRoute()
     const id = route.params.id
 
@@ -25,7 +26,7 @@ export default {
     const saveApplicant = async (client_id) => {
       try {
         const response = await axios.post('positions/applicant', {
-          client_id,
+          person_id: client_id,
           positions_id: position.value.id
         })
         if (response.data.status === true) {
@@ -34,6 +35,11 @@ export default {
         }
       } catch (error) {
         console.info(error.response?.data?.errors)
+        swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: error.response.data.errors
+        })
       }
     }
 
@@ -58,7 +64,7 @@ export default {
     }
 
     const getClients = async () => {
-      const response = await axios.get('client')
+      const response = await axios.get('person')
       clients.data = response.data
     }
 
@@ -95,11 +101,11 @@ export default {
         <div>
           <ul class="list">
             <li class="applicant" v-for="applicant in position.applicants" :key="applicant.id">
-              <p>{{ applicant.client.name }} - Skills: {{ applicant.client.skills }}</p>
+              <p>{{ applicant.person.name }} - Skills: {{ applicant.person.skills }}</p>
 
               <div class="actions">
-                <a href="#" @click="markAsWinner(applicant.id)">Marcar Ganador</a>
-                <a href="#" @click="deleteApplicant(applicant.id)">Eliminar</a>
+                <a class="winner" href="#" @click="markAsWinner(applicant.id)">Winner</a>
+                <a class="delete" href="#" @click="deleteApplicant(applicant.id)">Delete</a>
               </div>
             </li>
           </ul>
@@ -193,11 +199,10 @@ export default {
   }
 
   .applicants-view {
-    width: 80%;
+    width: 100%;
     padding: 20px;
     border: 1px solid #ccc6;
     border-radius: 5px;
-    margin-right: 20px;
 
     h2 {
       margin: 0;
@@ -220,6 +225,15 @@ export default {
         a {
           padding: 2px 5px;
           margin-right: 10px;
+        }
+
+        .winner {
+          font-weight: 900;
+          color: #65c556;
+        }
+        .delete {
+          font-weight: 900;
+          color: red;
         }
       }
     }

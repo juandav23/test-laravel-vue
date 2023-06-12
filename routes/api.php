@@ -17,13 +17,15 @@ Route::middleware('auth:sanctum')->controller(\App\Http\Controllers\CompanyContr
     ->group(function () {
         Route::get('', 'index');
         Route::post('', 'store');
+        Route::put('{id}', 'update');
     });
 
-Route::middleware('auth:sanctum')->controller(\App\Http\Controllers\ClientController::class)
-    ->prefix('client')
+Route::middleware('auth:sanctum')->controller(\App\Http\Controllers\PersonController::class)
+    ->prefix('person')
     ->group(function () {
         Route::get('', 'index');
         Route::post('', 'store');
+        Route::delete('{id}', 'destroy');
     });
 
 Route::middleware('auth:sanctum')->controller(\App\Http\Controllers\PositionsController::class)

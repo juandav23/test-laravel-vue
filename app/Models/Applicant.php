@@ -9,8 +9,8 @@ class Applicant extends Model
 {
     use HasFactory;
 
-    public function client()
+    public function person()
     {
-        return $this->belongsTo(Client::class);
+        return $this->belongsTo(Person::class);
     }
 }

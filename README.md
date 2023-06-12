@@ -1,34 +1,18 @@
 # Backend
 
-### copy .env.example to .env
+### copy .env.test to .env
 
-Create a database and change the information in the .env file
+You will need to free 8000 and 8081 ports and have installed docker and docker-compose
 
 #### Run:
 
 ```sh
-composer install
-```
-
-```sh
-php artisan migrate
-```
-
-```sh
-php artisan db:seed
-```
-
-```sh
-php artisan optimize
-```
-
-```sh
-php artisan serve
+docker-compose up -d --build
 ```
 
 ## FRONTEND
 
--   The frontend folder is in the root proyect and is called FRONT
+-   The FRONTEND folder is in the root proyect and is called FRONTEND
 -   If you want you can move it to another location
 -   Go to file '''src/store/index.js''' and change the backend server url
 
@@ -39,11 +23,13 @@ npm install
 ```
 
 ```sh
-npm run dev "for development or"
+npm run prod
 ```
 
 ```sh
-npm run build "to create the PDN package"
+docker-compose up -d --build
 ```
+
+Check URL http://localhost:8081/
 
 #### Done !!

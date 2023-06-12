@@ -17,9 +17,9 @@ return new class extends Migration
             $table->text('description');
             $table->string('role');
             $table->integer('years_of_experience');
-            $table->decimal('salary', 8, 2)->nullable();
+            $table->decimal('budget', 8, 2)->nullable();
             $table->boolean('open')->default(true);
-            $table->uuid('client_id')->nullable();
+            $table->uuid('person_id')->nullable();
             $table->timestamps();
         });
     }

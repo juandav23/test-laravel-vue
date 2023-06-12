@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('applicants', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('positions_id');
-            $table->uuid('client_id');
+            $table->uuid('person_id');
             $table->tinyInteger('score');
             $table->decimal('expected_salary', 8, 2)->nullable();
             $table->boolean('selected')->default(false);
