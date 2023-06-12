@@ -32,6 +32,7 @@ export default {
         userinfo = await dispatch('getUser')
       }
 
+      console.info(userinfo)
       await dispatch('fillUser', userinfo)
     },
 

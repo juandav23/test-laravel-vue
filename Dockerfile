@@ -35,8 +35,6 @@ COPY ./docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 RUN php artisan optimize
 RUN php artisan cache:clear
 RUN php artisan key:generate
-RUN php artisan migreate:fresh
-RUN php artisan db:seed
 
 
 # Expose port 80 and start php-fpm server (for FastCGI Process Manager)
